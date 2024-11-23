@@ -4,21 +4,21 @@ async function connect() {
     try {
         const HOST = 'localhost';
         const PORT = 3306;
-        const user = 'root';
-        const password = '';
-        const  DATABASE = 'BANCA_MOVIL';
+        const USER = 'root';
+        const PASSWORD = '';
+        const  DATABASE = 'banca_movil';
 
         const connection = await sql.createConnection({
             'host': HOST,
             'port': PORT,
-            'user': user,
-            'password': password,
+            'user': USER,
+            'password': PASSWORD,
             'database': DATABASE,
         });
-        console.log('Conexión creada');
+        console.log('Connection created');
         return connection;
     } catch (err) {
-        console.log('Ocurrió un error al intentar realizar la conexión: ' + err);
+        console.log('Error trying to connect to database: ' + err);
         throw err;
     }
 }
