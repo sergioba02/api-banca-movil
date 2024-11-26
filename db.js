@@ -6,7 +6,7 @@ async function connect() {
         const PORT = 3306;
         const USER = 'root';
         const PASSWORD = '';
-        const  DATABASE = 'banca_movil';
+        const  DATABASE = 'banca-movil';
 
         const connection = await sql.createConnection({
             'host': HOST,
