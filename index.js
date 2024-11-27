@@ -29,7 +29,7 @@ app.get('/users', async (req,res) => {
 
 
 
-app.post('/user', async (req, res) => {
+app.post('/register', async (req, res) => {
     let db;
     try{
         const {name, email, password} = req.body;
@@ -49,7 +49,7 @@ app.post('/user', async (req, res) => {
         if (db) await db.end();
     }});
 
-app.delete('/user/:id', async (req, res) => {
+app.delete('/delete/:id', async (req, res) => {
     let db;
     try{
         const id = req.params.id;
@@ -69,7 +69,7 @@ app.delete('/user/:id', async (req, res) => {
         if (db) await db.end();
     }});
 
-app.put('/user/:id', async (req, res) => {
+app.put('/update/:id', async (req, res) => {
     let db;
     try{
         const id = req.params.id;

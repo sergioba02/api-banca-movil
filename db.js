@@ -4,6 +4,11 @@ require('dotenv').config()
 
 async function connect() {
     try {
+        const HOST = 'localhost';
+        const PORT = 3306;
+        const USER = 'root';
+        const PASSWORD = '';
+        const  DATABASE = 'banca_movil';
 
         const connection = await sql.createConnection({
             'host': process.env.MYSQLHOST,
