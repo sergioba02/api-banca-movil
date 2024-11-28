@@ -23,6 +23,7 @@ router.get('/users', async (req, res) =>{
 router.post('/register', async(req, res) => {
     let db;
     try {
+        console.log(req.body);
         const {name, surname, email, password} = req.body;
         const saltRound = 10;
         db = await connect();
