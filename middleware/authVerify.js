@@ -12,7 +12,7 @@ function authVerify(req, res, next) {
         req.email_usuario = decoded.email;
         next();
     } catch(err) {
-        return res.status(401).json({'error': 'Ocurrió un error volver a intentarlo' + err});
+        return res.status(401).json({'error': 'Ocurrió un error, volver a intentarlo' + err});
     }
 }
 
