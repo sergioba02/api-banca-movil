@@ -1,6 +1,5 @@
 const { Router } = require('express');
 const connect = require('../db');
-const bcrypt = require('bcrypt');
 const router = Router();
 const authVerify = require('../middleware/authVerify');
 
@@ -20,34 +19,18 @@ router.get('/users', async (req, res) => {
     }
 });
 
-router.get('/users', async (req, res) => {
+router.get('/user/data', authVerify, async (req, res) => {
+    const id = req.id
+    console.log(id)
     let db;
     try {
         db = await connect();
-        console.log(email);
-        const query = 'SELECT * FROM users';
-        const [row] = await db.execute(query);
-        console.log(row);
-        res.json({
-            'status': 200,
-            'users': row
-        });
-    } catch (err) {
-        console.log(err);
-    }
-});
-
-router.get('/users', async (req, res) => {
-    let db;
-    try {
-        db = await connect();
-        console.log(email);
-        const query = 'SELECT * FROM users';
-        const [row] = await db.execute(query);
-        console.log(row);
-        res.json({
-            'status': 200,
-            'users': row
+        const query = 'SELECT * FROM users WHERE id = ?';
+        const [rows] = await db.execute(query, [id]);
+        console.log(rows);
+        res.status(200).json({
+            id: id,
+            data: rows
         });
     } catch (err) {
         console.log(err);

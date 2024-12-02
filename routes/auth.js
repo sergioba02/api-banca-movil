@@ -5,7 +5,13 @@ const router = Router();
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 
+const blacklist = [];
+
 router.post('/auth/login', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (blacklist.includes(token)) {
+        return res.status(401).json({ message: 'Token inválido o expirado' });
+    }
     let db;
     try {
         const { email, password } = req.body;
@@ -26,13 +32,12 @@ router.post('/auth/login', async (req, res) => {
                 const token = jwt.sign({ id: row[0].id }, process.env.SECRET_KEY, {
                     expiresIn: '1h'
                 });
-                res.cookie('jwt', token)
                 res.status(200).json({
                     token: token,
                     message: 'Inicio de sesion exitoso'
                 });
             } else {
-                res.status(401).json({
+                res.status(400).json({
                     message: 'La contraseña es incorrecta'
 
                 });
@@ -42,6 +47,16 @@ router.post('/auth/login', async (req, res) => {
         console.log(err);
     }
 });
+
+router.post('/auth/logout', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token) {
+        blacklist.push(token);
+        return res.status(200).json({ message: 'Logout exitoso' });
+    }
+    return res.status(400).json({ message: 'Token no proporcionado' });
+});
+
 
 router.post('/auth/register', async (req, res) => {
     let db;
