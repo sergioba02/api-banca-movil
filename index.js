@@ -3,11 +3,13 @@ const app = express();
 const bodyParser = require('body-parser');
 const users = require('./routes/users');
 const auth = require('./routes/auth');
+const cookieParser = require('cookie-parser')
 
 const PORT = 3000;
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 app.use(users);
 app.use(auth);

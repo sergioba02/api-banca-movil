@@ -37,6 +37,41 @@ router.get('/users', async (req, res) => {
     }
 });
 
+router.get('/users', async (req, res) => {
+    let db;
+    try {
+        db = await connect();
+        console.log(email);
+        const query = 'SELECT * FROM users';
+        const [row] = await db.execute(query);
+        console.log(row);
+        res.json({
+            'status': 200,
+            'users': row
+        });
+    } catch (err) {
+        console.log(err);
+    }
+});
+
+router.get('/users/transactions', authVerify, async (req, res) => {
+    const id = req.id
+    let db;
+    try {
+        db = await connect();
+        console.log(email);
+        const query = 'SELECT * FROM transactions WHERE account_orig_id = ? or account_dest_id = ?';
+        const [rows] = await db.execute(query, [id, id]);
+        console.log(rows);
+        res.json({
+            'status': 200,
+            'users': rows
+        });
+    } catch (err) {
+        console.log(err);
+    }
+});
+
 router.delete('/delete', authVerify, async (req, res) => {
     const { email } = req.body;
     let db;

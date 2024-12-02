@@ -3,6 +3,7 @@ const connect = require('../db');
 const bcrypt = require('bcrypt');
 const router = Router();
 const jwt = require('jsonwebtoken');
+require('dotenv').config()
 
 router.post('/auth/login', async (req, res) => {
     let db;
@@ -10,24 +11,25 @@ router.post('/auth/login', async (req, res) => {
         const { email, password } = req.body;
         db = await connect();
 
-        const query = `SELECT * FROM users WHERE email = "${email}"`;
-        const [row] = await db.execute(query);
+        const query = `SELECT * FROM users WHERE email = ?`;
+        const [row] = await db.execute(query, [email]);
 
         if (row.length===0) {
             console.error('Email no registrado')
             res.status(404).json({
                 message: 'EL email ingresado no está registrado'
-                
             });
         }
         else{
             const hashPassword = row[0].password;
             if (await bcrypt.compare(password, hashPassword)) {
-                const token = jwt.sign({ id: row[0].id }, 'secret', {
+                const token = jwt.sign({ id: row[0].id }, process.env.SECRET_KEY, {
                     expiresIn: '1h'
                 });
+                res.cookie('jwt', token)
                 res.status(200).json({
-                    'token': token
+                    token: token,
+                    message: 'Inicio de sesion exitoso'
                 });
             } else {
                 res.status(401).json({
