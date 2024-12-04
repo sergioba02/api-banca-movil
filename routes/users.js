@@ -8,12 +8,34 @@ router.get('/users', async (req, res) => {
     try {
         db = await connect();
         const query = 'SELECT * FROM users';
-        const [row] = await db.execute(query);
-        console.log(row);
-        res.json({
-            'status': 200,
-            'users': row
+        const [rows] = await db.execute(query);
+        console.log(rows);
+        res.status(200).json({
+            data: rows
         });
+        db.end();
+    } catch (err) {
+        console.log(err);
+    }
+});
+
+router.get('/users/names', authVerify, async (req, res) => {
+    let db;
+    const ids = req.query.id;
+    console.log('ids: ',ids);
+    try {
+        if (ids.length === 0) {
+            console.log('No hay IDs para filtrar');
+        } else {
+            db = await connect();
+            const query = `SELECT id, name,surname FROM users WHERE id IN (${ids.map(() => '?').join(', ')})`;
+            const [rows] = await db.execute(query, ids);
+            console.log(rows);
+            res.status(200).json({
+                data: rows
+            });
+            db.end();
+        }
     } catch (err) {
         console.log(err);
     }
@@ -21,7 +43,6 @@ router.get('/users', async (req, res) => {
 
 router.get('/user/data', authVerify, async (req, res) => {
     const id = req.id
-    console.log(id)
     let db;
     try {
         db = await connect();
@@ -32,26 +53,33 @@ router.get('/user/data', authVerify, async (req, res) => {
             id: id,
             data: rows
         });
+        db.end();
     } catch (err) {
         console.log(err);
     }
 });
 
-router.get('/users/transactions', authVerify, async (req, res) => {
+router.get('/user/lastTransactions', authVerify, async (req, res) => {
     const id = req.id
     let db;
     try {
         db = await connect();
-        console.log(email);
-        const query = 'SELECT * FROM transactions WHERE account_orig_id = ? or account_dest_id = ?';
+        const query = 'SELECT * FROM transactions WHERE user_orig_id = ? or user_dest_id = ? ORDER BY date DESC LIMIT 4';
         const [rows] = await db.execute(query, [id, id]);
         console.log(rows);
-        res.json({
-            'status': 200,
-            'users': rows
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron transacciones' });
+        }
+        res.status(200).json({
+            data: rows
         });
+        db.end();
     } catch (err) {
-        console.log(err);
+        console.error('Error al obtener transacciones:', err);
+        res.status(500).json({
+            message: 'Error al obtener las transacciones',
+            error: err
+        });
     }
 });
 
@@ -68,6 +96,7 @@ router.delete('/delete', authVerify, async (req, res) => {
                 'status': 404,
                 'msg': 'Email no encontrado',
             });
+            db.end();
         } else {
             res.json({
                 'status': 200,
@@ -92,6 +121,7 @@ router.put('/update', async (req, res) => {
                 'status': 404,
                 'msg': 'Email no encontrado',
             });
+            db.end();
         } else {
             res.json({
                 'status': 200,

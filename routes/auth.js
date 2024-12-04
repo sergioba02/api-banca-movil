@@ -43,6 +43,7 @@ router.post('/auth/login', async (req, res) => {
                 });
             }
         }
+        db.end();
     } catch (err) {
         console.log(err);
     }
@@ -75,6 +76,7 @@ router.post('/auth/register', async (req, res) => {
                 msg: 'User registered succesfully'
             });
         }
+        db.end();
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({
