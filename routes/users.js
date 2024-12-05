@@ -83,6 +83,31 @@ router.get('/user/lastTransactions', authVerify, async (req, res) => {
     }
 });
 
+router.get('/user/allTransactions', authVerify, async (req, res) => {
+    const id = req.id
+    let db;
+    try {
+        db = await connect();
+        const query = 'SELECT * FROM transactions WHERE user_orig_id = ? or user_dest_id = ? ORDER BY date DESC LIMIT 30';
+        const [rows] = await db.execute(query, [id, id]);
+        console.log(rows);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron transacciones' });
+        }
+        res.status(200).json({
+            id: id,
+            data: rows
+        });
+        db.end();
+    } catch (err) {
+        console.error('Error al obtener transacciones:', err);
+        res.status(500).json({
+            message: 'Error al obtener las transacciones',
+            error: err
+        });
+    }
+});
+
 router.delete('/delete', authVerify, async (req, res) => {
     const { email } = req.body;
     let db;
