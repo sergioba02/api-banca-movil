@@ -21,7 +21,7 @@ router.get('/users', async (req, res) => {
 
 router.get('/users/names', authVerify, async (req, res) => {
     let db;
-    const ids = req.query.id;
+    const ids = Array.isArray(req.query.id) ? req.query.id : [req.query.id];
     console.log('ids: ',ids);
     try {
         if (ids.length === 0) {
@@ -53,6 +53,46 @@ router.get('/user/data', authVerify, async (req, res) => {
             id: id,
             data: rows
         });
+        db.end();
+    } catch (err) {
+        console.log(err);
+    }
+});
+
+router.put('/user/addBalance', authVerify, async (req, res) => {
+    const id = req.id;
+    const amount = req.body.amount;
+    let db;
+    try {
+        db = await connect();
+        const query = 'UPDATE users SET balance = ? WHERE id = ?';
+        const [rows] = await db.execute(query, [amount, id]);
+        console.log(rows);
+        res.status(200).json({
+            data: rows
+        });
+        db.end();
+    } catch (err) {
+        console.log(err);
+    }
+});
+
+router.post('/createTransaction', authVerify, async (req, res) => {
+    const orig_id = req.body.orig_id;
+    const dest_id = req.body.dest_id;
+    const amount = req.body.amount;
+    let db;
+    try {
+        db = await connect();
+        const query = 'INSERT INTO transactions(user_orig_id, user_dest_id, amount) values(?, ?, ?)';
+        const [rows] = await db.execute(query, [orig_id, dest_id, amount]);
+        console.log(rows);
+        if (rows) {
+            res.status(200).json({
+                users: rows,
+                msg: 'Transaction succesfully registered'
+            });
+        }
         db.end();
     } catch (err) {
         console.log(err);

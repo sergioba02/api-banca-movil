@@ -18,18 +18,18 @@ router.post('/auth/login', async (req, res) => {
         db = await connect();
 
         const query = `SELECT * FROM users WHERE email = ?`;
-        const [row] = await db.execute(query, [email]);
+        const [rows] = await db.execute(query, [email]);
 
-        if (row.length===0) {
+        if (rows.length===0) {
             console.error('Email no registrado')
             res.status(404).json({
                 message: 'EL email ingresado no está registrado'
             });
         }
         else{
-            const hashPassword = row[0].password;
+            const hashPassword = rows[0].password;
             if (await bcrypt.compare(password, hashPassword)) {
-                const token = jwt.sign({ id: row[0].id }, process.env.SECRET_KEY, {
+                const token = jwt.sign({ id: rows[0].id }, process.env.SECRET_KEY, {
                     expiresIn: '1h'
                 });
                 res.status(200).json({
@@ -67,26 +67,23 @@ router.post('/auth/register', async (req, res) => {
         db = await connect();
         const hashPassword = await bcrypt.hash(password, saltRound);
         const query = `INSERT INTO users(name, surname, email, password) VALUES(?, ?, ?, ?)`;
-        const [row] = await db.execute(query, [name, surname, email, hashPassword]);
-        console.log(row);
-        if (row) {
+        const [rows] = await db.execute(query, [name, surname, email, hashPassword]);
+        console.log(rows);
+        if (rows) {
             res.status(200).json({
-                status: 200,
-                users: row,
-                msg: 'User registered succesfully'
+                users: rows,
+                msg: 'User succesfully registered'
             });
         }
         db.end();
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({
-                status: 409,
                 message: 'El email ya está en uso',
                 error: error.sqlMessage,
             });
         }
         return res.status(500).json({
-            status: 500,
             message: 'Error interno del servidor',
             error: error.message,
         });
