@@ -55,6 +55,7 @@ router.post('/auth/logout', async (req, res) => {
         blacklist.push(token);
         return res.status(200).json({ message: 'Logout exitoso' });
     }
+    
     return res.status(400).json({ message: 'Token no proporcionado' });
 });
 
