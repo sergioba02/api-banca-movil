@@ -23,7 +23,7 @@ router.post('/auth/login', async (req, res) => {
         if (rows.length===0) {
             console.error('Email no registrado')
             res.status(404).json({
-                message: 'EL email ingresado no está registrado'
+                message: 'El email ingresado no está registrado'
             });
         }
         else{

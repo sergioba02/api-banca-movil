@@ -22,7 +22,7 @@ router.get('/users', async (req, res) => {
 router.get('/users/names', authVerify, async (req, res) => {
     let db;
     const ids = Array.isArray(req.query.id) ? req.query.id : [req.query.id];
-    console.log('ids: ',ids);
+    console.log('ids: ', ids);
     try {
         if (ids.length === 0) {
             console.log('No hay IDs para filtrar');
@@ -78,18 +78,22 @@ router.put('/user/addBalance', authVerify, async (req, res) => {
 });
 
 router.post('/createTransaction', authVerify, async (req, res) => {
-    const orig_id = req.body.orig_id;
-    const dest_id = req.body.dest_id;
-    const amount = req.body.amount;
+    const { orig_id, dest_id, amount, concept } = req.body;
+
+    console.log('Datos recibidos:');
+    console.log('ID de origen:', orig_id);
+    console.log('ID de destino:', dest_id);
+    console.log('Monto:', amount);
+    console.log('Concepto:', concept);
     let db;
     try {
         db = await connect();
-        const query = 'INSERT INTO transactions(user_orig_id, user_dest_id, amount) values(?, ?, ?)';
-        const [rows] = await db.execute(query, [orig_id, dest_id, amount]);
+        const query = 'INSERT INTO transactions(user_orig_id, user_dest_id, amount, concept) values(?, ?, ?, ?)';
+        const [rows] = await db.execute(query, [orig_id, dest_id, amount, concept]);
         console.log(rows);
         if (rows) {
             res.status(200).json({
-                users: rows,
+                rows: rows,
                 msg: 'Transaction succesfully registered'
             });
         }
