@@ -94,7 +94,7 @@ router.post('/createTransaction', authVerify, async (req, res) => {
         if (rows) {
             res.status(200).json({
                 rows: rows,
-                msg: 'Transaction succesfully registered'
+                msg: 'Transaction registered succesfully'
             });
         }
         db.end();
@@ -103,36 +103,40 @@ router.post('/createTransaction', authVerify, async (req, res) => {
     }
 });
 
-router.get('/user/lastTransactions', authVerify, async (req, res) => {
-    const id = req.id
+router.post('/saveCode', authVerify, async (req, res) => {
+    const orig_id = req.id
+    const { code, data, status } = req.body;
+
+    console.log('Datos recibidos:');
+    console.log('orig_id', orig_id)
+    console.log('codigo:', code);
+    console.log('data:', data);
+    console.log('estado:', status);
+
     let db;
     try {
         db = await connect();
-        const query = 'SELECT * FROM transactions WHERE user_orig_id = ? or user_dest_id = ? ORDER BY date DESC LIMIT 4';
-        const [rows] = await db.execute(query, [id, id]);
+        const query = 'INSERT INTO qr_codes(orig_id, code, data, status) values(?, ?, ?, ?)';
+        const [rows] = await db.execute(query, [orig_id, code, data, status]);
         console.log(rows);
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron transacciones' });
+        if (rows) {
+            res.status(200).json({
+                rows: rows,
+                msg: 'Code saved successfully'
+            });
         }
-        res.status(200).json({
-            data: rows
-        });
         db.end();
     } catch (err) {
-        console.error('Error al obtener transacciones:', err);
-        res.status(500).json({
-            message: 'Error al obtener las transacciones',
-            error: err
-        });
+        console.log(err);
     }
 });
 
-router.get('/user/allTransactions', authVerify, async (req, res) => {
+router.get('/user/transactions', authVerify, async (req, res) => {
     const id = req.id
     let db;
     try {
         db = await connect();
-        const query = 'SELECT * FROM transactions WHERE user_orig_id = ? or user_dest_id = ? ORDER BY date DESC LIMIT 30';
+        const query = 'SELECT * FROM transactions WHERE user_orig_id = ? or user_dest_id = ? ORDER BY date DESC LIMIT 20';
         const [rows] = await db.execute(query, [id, id]);
         console.log(rows);
         if (rows.length === 0) {
@@ -151,6 +155,53 @@ router.get('/user/allTransactions', authVerify, async (req, res) => {
         });
     }
 });
+
+router.get('/user/qrcodes', authVerify, async (req, res) => {
+    const id = req.id
+    let db;
+    try {
+        db = await connect();
+        const query = 'SELECT * FROM qr_codes WHERE orig_id = ? ORDER BY date DESC LIMIT 20';
+        const [rows] = await db.execute(query, [id]);
+        console.log(rows);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron los códigos QR' });
+        }
+        res.status(200).json({
+            id: id,
+            data: rows
+        });
+        db.end();
+    } catch (err) {
+        console.error('Error al obtener los códigos QR:', err);
+        res.status(500).json({
+            message: 'Error al obtener las los códigos QR',
+            error: err
+        });
+    }
+});
+
+router.delete('/delete/:code', authVerify, async (req, res) => {
+    const { code } = req.params;
+
+    let db;
+    try {
+        db = await connect();
+        const query = 'DELETE FROM qr_codes WHERE code = ?';
+        const [rows] = await db.execute(query, [code]);
+        console.log(rows);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'QR no encontrado' });
+        }
+        res.status(200).json({ 
+            message: `QR con código ${code} eliminado exitosamente` });
+        db.end();
+    } catch (err) {
+        res.status(500).json({ 
+            message: 'Error al eliminar el QR', 
+            error: err.message });
+    }
+  });
 
 router.delete('/delete', authVerify, async (req, res) => {
     const { email } = req.body;
